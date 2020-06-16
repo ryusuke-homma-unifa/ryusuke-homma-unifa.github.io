@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width" />
+
+    <title>TODOメモ</title>
+
+    <style>
+      .todo-form {
+        margin-bottom: 10px;
+      }
+      .todo-form .error-message {
+        color: red;
+      }
+      .todo-list-table {
+        border-collapse: collapse;
+      }
+      .todo-list-table,
+      th,
+      td {
+        border: 1px solid black;
+      }
+      .todo-list-table .todo-no {
+        text-align: right;
+      }
+      .todo-list-table .todo-control-menu {
+        text-align: center;
+      }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+  </head>
+  <body>
+    <div id="app">
+      <h1>TODO管理アプリ</h1>
+
+      <h2>TODO登録フォーム</h2>
+      <form id="todoForm" class="todo-form" @submit.prevent="onSubmitTodoForm">
+        内容: <input name="todoText" v-model="todoText" />
+
+        <button type="submit" :disabled="sending">登録</button>
+
+        <p class="error-message" v-if="errorMessage">
+          {{ errorMessage }}
+        </p>
+      </form>
+
+      <h2>TODO一覧</h2>
+      <template v-if="todoList.length == 0">
+        TODOはありません。
+      </template>
+      <template v-else>
+        <table class="todo-list-table">
+          <thead>
+            <tr>
+              <th style="width: 50;">No.</th>
+              <th style="width: 250px;">内容</th>
+              <th style="width: 100px;">操作</th>
+            </tr>
+          </thead>
+          <tdoby>
+            <tr
+              v-for="(todo, i) in todoList"
+              :key="todo.id"
+              :data-todo-no="todo.no"
+            >
+              <td class="todo-no">{{ todo.no }}</td>
+              <td class="todo-text">{{ todo.text }}</td>
+              <td class="todo-control-menu" style="text-align: center;">
+                <button @click="completeTodo(i)">完了</button>
+              </td>
+            </tr>
+          </tdoby>
+        </table>
+      </template>
+    </div>
+
+    <script>
+      new Vue({
+        el: "#app",
+        data() {
+          return {
+            nextTodoNo: 1,
+            todoText: "",
+            todoList: [],
+            sending: false,
+            errorMessage: null,
+          };
+        },
+        methods: {
+          executeAfterRandomWaitTime(maxWaitMillSec, f) {
+            const waitMillSec = Math.floor(
+              Math.random() * Math.floor(maxWaitMillSec)
+            );
+            setTimeout(f, waitMillSec);
+          },
+          onSubmitTodoForm(_e) {
+            this.errorMessage = null;
+            if (this.todoText.length < 1) {
+              this.errorMessage = "内容を入力してください。";
+              return;
+            }
+            if (this.todoText.length >= 20) {
+              this.errorMessage = "内容は20文字以内で入力してください。";
+              return;
+            }
+            if (this.todoList.length > 5) {
+              this.errorMessage = "TODOは5個までしか登録できません。";
+              return;
+            }
+
+            const self = this;
+            this.sending = true;
+            this.executeAfterRandomWaitTime(3000, function () {
+              const todo = { no: self.nextTodoNo, text: self.todoText };
+              self.todoList.push(todo);
+              self.nextTodoNo += 1;
+
+              self.todoText = "";
+              self.sending = false;
+            });
+          },
+          completeTodo(index) {
+            this.todoList.splice(index, 1);
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
